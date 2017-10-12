@@ -20,11 +20,18 @@ package document.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import document.data.RawDocument;
+import document.data.Reuter;
 
 
 /**
@@ -40,16 +47,9 @@ public class ExtractReuters
     {
         this.reutersDir = reutersDir;
         this.outputDir = outputDir;
-        System.out.println("Deleting all files in " + outputDir);
-        File [] files = outputDir.listFiles();
-        for (int i = 0; i < files.length; i++)
-        {
-            files[i].delete();
-        }
-
     }
 
-    public void extract()
+    public RawDocument extract()
     {
         File [] sgmFiles = reutersDir.listFiles(new FileFilter()
         {
@@ -58,35 +58,40 @@ public class ExtractReuters
                 return file.getName().endsWith(".sgm");
             }
         });
+        
+        RawDocument rawDocuments = null;
+        
         if (sgmFiles != null && sgmFiles.length > 0)
         {
-            for (int i = 0; i < sgmFiles.length; i++)
+            rawDocuments = new RawDocument();
+        	for (int i = 0; i < sgmFiles.length; i++)
             {
-                File sgmFile = sgmFiles[i];
-                //TODO:refactor this to add doc to list, generate each file into listReutersDocument class.
-                extractFile(sgmFile);
+            	File sgmFile = sgmFiles[i];
+            	rawDocuments.addReuter(extractFile(sgmFile));
             }
+   
         }
         else
         {
             System.err.println("No .sgm files in " + reutersDir);
         }
+        return rawDocuments;
     }
 
-    Pattern EXTRACTION_PATTERN = Pattern.compile("<TITLE>(.*?)</TITLE>|<DATE>(.*?)</DATE>|<BODY>(.*?)</BODY>");
+    Pattern EXTRACTION_PATTERN = Pattern.compile("<TITLE>(.*?)</TITLE>|<BODY>(.*?)</BODY>");
 
     private static String[] META_CHARS
-            = {"&", "<", ">", "\"", "'"};
+            = {"&", "<", ">", "\"", "'", ""};
 
     private static String[] META_CHARS_SERIALIZATIONS
-            = {"&amp;", "&lt;", "&gt;", "&quot;", "&apos;"};
+            = {"&amp;", "&lt;", "&gt;", "&quot;", "&apos;", "Reuter &#3;"};
 
     /**
      * Override if you wish to change what is extracted
      *
      * @param sgmFile
      */
-    protected void extractFile(File sgmFile)
+    protected List<Reuter> extractFile(File sgmFile)
     {
         try
         {
@@ -97,6 +102,8 @@ public class ExtractReuters
 
             String line = null;
             int docNumber = 0;
+        	List<Reuter> reuterList = new ArrayList<Reuter>();
+        	File outFile = null;
             while ((line = reader.readLine()) != null)
             {
                 //when we see a closing reuters tag, flush the file
@@ -119,23 +126,35 @@ public class ExtractReuters
                                 outBuffer.append(matcher.group(i));
                             }
                         }
-                        outBuffer.append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+                        outBuffer.append(LINE_SEPARATOR);
                     }
                     String out = outBuffer.toString();
                     for (int i = 0; i < META_CHARS_SERIALIZATIONS.length; i++)
                     {
                         out = out.replaceAll(META_CHARS_SERIALIZATIONS[i], META_CHARS[i]);
                     }
-                    File outFile = new File(outputDir, sgmFile.getName() + "-" + (docNumber++) + ".txt");
-                    //System.out.println("Writing " + outFile);
+                    outFile = new File(outputDir, "buffer.txt");
+                    
                     FileWriter writer = new FileWriter(outFile);
                     writer.write(out);
                     writer.close();
                     outBuffer.setLength(0);
                     buffer.setLength(0);
+                    
+                    docNumber++;
+                    
+                    BufferedReader reuterReader = new BufferedReader(new FileReader(outFile));
+                    Reuter reuter = new Reuter();
+                    reuter.setDocID(docNumber);
+                    reuter.setTitle(reuterReader.readLine());
+                    reuter.setBody(reuterReader.readLine());
+                    reuterList.add(reuter);
+                    reuterReader.close();
                 }
             }
             reader.close();
+            outFile.delete();
+            return reuterList;
         }
 
         catch (
@@ -154,10 +173,29 @@ public class ExtractReuters
 
         if (reutersDir.exists())
         {
-            File outputDir = new File("src/main/resources/formattedReuters21578");
-            outputDir.mkdirs();
-            ExtractReuters extractor = new ExtractReuters(reutersDir, outputDir);
-            extractor.extract();
+            System.out.println("Extracting........");
+        	File outputBuffer = new File("src/main/resources/reuterBuffer");
+            File outputPOJODir = new File("src/main/resources/POJODocuments");
+            outputBuffer.mkdir();
+            outputPOJODir.mkdirs();
+            ExtractReuters extractor = new ExtractReuters(reutersDir, outputBuffer);
+        	System.out.println("Now reading Reuter corpus........");
+            RawDocument raw = extractor.extract();
+        	System.out.println("Now writing processed Reuter corpus into binary file........");
+            try {
+                File outFile = new File(outputPOJODir, "POJOReuterList");
+                ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(outFile));
+				writer.writeObject(raw);
+	            writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        	System.out.println("Now deleting our temp buffer directory........");
+            if(outputBuffer.delete()){
+            	System.out.println("Directory deleted.");
+            }
+            System.out.println("Done, document list length: "+ raw.getReuterList().size());
+           
         }
         else
         {
