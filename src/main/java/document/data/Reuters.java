@@ -1,42 +1,42 @@
 package document.data;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
-@XmlRootElement
-public class Reuters {
+public class Reuter implements Serializable{
 
-    private int docID;
-	private String date;
-    private String topics;
-    private Text text;
-    
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private int docID;
+	private String title;
+	private String body;
+   
+	public Reuter(){}
+	
+	public Reuter(int docID, String title, String body) {
+		this.docID = docID;
+		this.title = title;
+		this.body = body;
+	}
+	
 	public int getDocID() {
 		return docID;
 	}
 	public void setDocID(int docID) {
 		this.docID = docID;
 	}
-	public String getDate() {
-		return date;
+	public String getTitle() {
+		return title;
 	}
-	@XmlElement
-	public void setDate(String date) {
-		this.date = date;
+	public void setTitle(String title) {
+		this.title = title;
 	}
-	public String getTopic() {
-		return topics;
+	public String getBody() {
+		return body;
 	}
-	@XmlElement
-	public void setTopic(String topic) {
-		this.topics = topic;
-	}
-	public Text getText() {
-		return text;
-	}
-	@XmlElement
-	public void setText(Text text) {
-		this.text = text;
+	public void setBody(String body) {
+		this.body = body;
 	}
 
 }
