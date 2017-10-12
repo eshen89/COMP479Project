@@ -7,24 +7,32 @@ import java.util.List;
 public class RawDocument implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private List<List<Reuter>> reuterList;
+	private List<Reuter> reuterList;
 
     public RawDocument(){}
 
-    public List<List<Reuter>> getReuterList() {
+    public List<Reuter> getReuterList() {
         return reuterList;
     }
 
-    public void setReuterList(List<List<Reuter>> reuterList) {
+    public void setReuterList(List<Reuter> reuterList) {
         this.reuterList = reuterList;
     }
     
-    public void addReuter(List<Reuter> reuter) {
+    public void addReuter(Reuter reuter) {
     		if(this.reuterList == null) {
-    			this.reuterList = new ArrayList<List<Reuter>>();
+    			this.reuterList = new ArrayList<Reuter>();
     			this.reuterList.add(reuter);
     		}else {
     			this.reuterList.add(reuter);
+    		}
+    }
+    
+    public void appendReuterList(List<Reuter> reuters) {
+    		if(this.reuterList == null) {
+    			this.reuterList = reuters;
+    		}else {
+    			this.reuterList.addAll(reuters);
     		}
     }
 }
