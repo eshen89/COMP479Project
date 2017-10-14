@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ir.data.RawDocument;
 import ir.data.Reuter;
+import ir.data.TokenStream;
 
 public class DocumentUtils {
 	private static final String INVERTED_INDEX_DIR = "src/main/resources/Inverted_index";
@@ -82,9 +83,9 @@ public class DocumentUtils {
 //			System.err.println("error occurred");
 //		}
 //		util.spmiInvert();
-		RawDocument rawDocument = RawDocument.getInstace();
+		TokenStream tokenStream = TokenStream.getInstance();
 		
-		rawDocument.init();
+		tokenStream.init();
 		
 	}
 }

@@ -32,7 +32,7 @@ public class RawDocument implements Serializable {
 
     private RawDocument(){}
     
-    public static RawDocument getInstace() {
+    public static RawDocument getInstance() {
     	if(instance == null) {
     		return instance = new RawDocument();
     	}
@@ -50,6 +50,7 @@ public class RawDocument implements Serializable {
 			outputBuffer.mkdir();
 			
 			this.extract();
+			outputBuffer.delete();
 			
 		    System.out.println("Extracting done, Reuter document list length: "+ this.getReuterList().size());
 		}
