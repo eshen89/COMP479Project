@@ -40,6 +40,7 @@ public class ReutersUtils
     private File reutersDir;
     private File outputDir;
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static int docID=0;
 
     private Pattern EXTRACTION_PATTERN = Pattern.compile("<TITLE>(.*?)</TITLE>|<BODY>(.*?)</BODY>");
 	private static String[] META_CHARS = {"&", "<", ">", "\"", "'", ""};
@@ -86,7 +87,6 @@ public class ReutersUtils
             StringBuffer outBuffer = new StringBuffer(1024);
 
             String line = null;
-            int docNumber = 0;
 	        	List<Reuter> reuterList = new ArrayList<Reuter>();
 	        	File outFile = null;
 	        while((line = reader.readLine()) != null){
@@ -117,11 +117,11 @@ public class ReutersUtils
 	                    outBuffer.setLength(0);
 	                    buffer.setLength(0);
 	                    
-	                    docNumber++;
+	                    docID++;
 	                    
 	                    BufferedReader reuterReader = new BufferedReader(new FileReader(outFile));
 	                    Reuter reuter = new Reuter();
-	                    reuter.setDocID(docNumber);
+	                    reuter.setDocID(docID);
 	                    reuter.setTitle(reuterReader.readLine());
 	                    reuter.setBody(reuterReader.readLine());
 	                    reuterList.add(reuter);

@@ -35,4 +35,8 @@ public class RawDocument implements Serializable {
     			this.reuterList.addAll(reuters);
     		}
     }
+    
+    public int size() {
+    		return this.reuterList.size();
+    }
 }

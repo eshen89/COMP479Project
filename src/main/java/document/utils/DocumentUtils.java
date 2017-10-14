@@ -11,16 +11,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import document.data.RawDocument;
 import document.data.Reuter;
 
 public class DocumentUtils {
 	private static final String REUTERS_DIR = "src/main/resources/reuters21578";
-	private static final String BUFFER_DIR = "src/main/resources/reuters21578";
-	private static final String POJO_OUTPUT_DIR = "src/main/resources/reuters21578";
+	private static final String BUFFER_DIR = "src/main/resources/reuterBuffer";
+	private static final String POJO_OUTPUT_DIR = "src/main/resources/POJOReuters";
 	private static final String POJOReuterList = "POJOReuterList";
+	private static final String INVERTED_INDEX_DIR = "src/main/resources/Inverted_index";
+	private static final String INVERTED_INDEX_RAW = "InvertedIndexRaw.json";
 	private RawDocument documentList;
 	private Map<String, TreeSet<Integer>> dictionary;
+	
+	public DocumentUtils(){};
 	
 	public void writePOJOReuters() {
 		File reutersDir = new File(REUTERS_DIR);
@@ -52,7 +58,7 @@ public class DocumentUtils {
 	}
 	
 	public boolean readPOJOReuters() {
-		File reuterByte = new File("src/main/resources/POJODocuments/POJOReuterList");
+		File reuterByte = new File(POJO_OUTPUT_DIR + "/" + POJOReuterList);
         if(reuterByte.exists()) {
         		try {
         				System.out.println("Reading raw document data from file......");
@@ -68,7 +74,8 @@ public class DocumentUtils {
         return this.documentList != null;
 	}
 	
-	public void spmiInvert(RawDocument documentStream) {
+	@SuppressWarnings("null")
+	public void spmiInvert() {
 		if(this.documentList == null) {
 			this.readPOJOReuters();
 		}
@@ -77,7 +84,7 @@ public class DocumentUtils {
 		String rawString = "";
 		String[] stringBuffer;
 		
-		List<Reuter> reuters = documentStream.getReuterList();
+		List<Reuter> reuters = this.documentList.getReuterList();
 		for(Reuter reuter: reuters) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(reuter.getTitle());
@@ -86,17 +93,51 @@ public class DocumentUtils {
 			stringBuffer = rawString.split(" ");
 		
 			for(String token: stringBuffer) {
-				if(!dictionary.containsKey(token.toLowerCase())) {
-					TreeSet<Integer> postingList = new TreeSet<Integer>();
-					postingList.add(reuter.getDocID());
-					dictionary.put(token, postingList);
-				}else {
-					if(!(dictionary.get(token).contains(reuter.getDocID()))) {
-						dictionary.get(token).add(reuter.getDocID());
+				if(token != null || token.equalsIgnoreCase("")) {
+					if(!dictionary.containsKey(token.toLowerCase())) {
+						TreeSet<Integer> postingList = new TreeSet<Integer>();
+						postingList.add(reuter.getDocID());
+						dictionary.put(token.toLowerCase(), postingList);
+					}else {
+						if(!(dictionary.get(token.toLowerCase()).contains(reuter.getDocID()))) {
+							dictionary.get(token.toLowerCase()).add(reuter.getDocID());
 						}
 					}
 				}
+			}
 		}
+        try {
+        		File file = new File(INVERTED_INDEX_DIR);
+        		file.mkdirs();
+        		File outputFile = new File(file, INVERTED_INDEX_RAW);
+            String json = new ObjectMapper().writeValueAsString(this.dictionary);
+            ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(outputFile));
+            output.writeUTF(json);
+            output.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+		
+	}
+	
+	public RawDocument getDocumentList() {
+		return documentList;
+	}
+
+	public void setDocumentList(RawDocument documentList) {
+		this.documentList = documentList;
+	}
+
+	public static void main(String[] args) {
+		DocumentUtils util = new DocumentUtils();
+		util.writePOJOReuters();
+		if(util.readPOJOReuters()) {
+			System.out.println(util.getDocumentList().size());
+		}else {
+			System.err.println("error occurred");
+		}
+		util.spmiInvert();
 		
 	}
 }
