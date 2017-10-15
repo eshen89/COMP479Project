@@ -6,8 +6,8 @@ import java.util.Queue;
 public class TokenStream {
 	
 	private static TokenStream instance;
-	private RawDocument rawDocument;
-	private Queue<Token> tokenList = new LinkedList<Token>();
+	private static RawDocument rawDocument;
+	private static Queue<Token> tokenList = new LinkedList<Token>();
 	private TokenStream() {};
 	
 	public static TokenStream getInstance() {
@@ -18,14 +18,14 @@ public class TokenStream {
 	}
 	
 	public void init() {
-		this.rawDocument = RawDocument.getInstance();
-		this.rawDocument.init();
+		rawDocument = RawDocument.getInstance();
+		rawDocument.init();
 		System.out.println("Tokenizing the reuters........");
 		
 		String rawString = "";
 		String[] stringBuffer;
 		
-		for(Reuter reuter: this.rawDocument.getReuterList()) {
+		for(Reuter reuter: rawDocument.getReuterList()) {
 			int docId = reuter.getDocID();
 			StringBuilder sb = new StringBuilder();
 			sb.append(reuter.getTitle());
@@ -40,13 +40,13 @@ public class TokenStream {
 						Token token = new Token();
 						token.setDocId(docId);
 						token.setTerm(rawToken);
-						this.tokenList.add(token);
+						tokenList.add(token);
 					}
 				}
 			}
 		}
 		
-		System.out.printf("Done, total token number: %d", this.tokenList.size());
+		System.out.printf("Done, total token number: %d", tokenList.size());
 		
 	}
 	
@@ -59,6 +59,17 @@ public class TokenStream {
 			return processedString;
 		}
 		return rawString;
+	}
+	
+	public boolean hasNextToken() {
+		return !tokenList.isEmpty();
+	}
+	
+	public Token nextToken() {
+		if(tokenList != null || hasNextToken()) {
+			return tokenList.poll();
+		}
+		return null;
 	}
 
 }
