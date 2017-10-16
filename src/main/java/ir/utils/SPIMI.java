@@ -68,7 +68,6 @@ public class SPIMI {
 						addToIndex(token.getTerm(), postingList);
 					}else {
 						spimiIndex.get(token.getTerm()).add(token.getDocId());
-//						System.out.println(token.getTerm() + " is now added to map, list size: " + spimiIndex.get(token.getTerm()).size());
 					}
 				}
 				
@@ -87,7 +86,6 @@ public class SPIMI {
 	
 	private void addToIndex(String term, TreeSet<Integer> posting) {
 		spimiIndex.put(term, posting);
-//		System.out.println(term + " is newly added, posting list size " + posting.size());
 	}
 	
 	private boolean isExist(String term) {
@@ -116,6 +114,10 @@ public class SPIMI {
 			}
 		}
 		return destinationMap;
+	}
+
+	public Map<String, TreeSet<Integer>> getMergedIndex() {
+		return mergedIndex;
 	}
 }
  

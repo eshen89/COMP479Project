@@ -16,6 +16,10 @@ public class TokenStream {
 	private static Queue<Token> tokenList = new LinkedList<Token>();
 	private List<String> stopwords = new ArrayList<String>();
 	
+	public void setStopwords(List<String> stopwords) {
+		this.stopwords = stopwords;
+	}
+
 	private final String STOP_WORD_DIR = "src/main/resources/StopWords/stopwords.txt";
 	
 	private TokenStream() {};
@@ -73,7 +77,7 @@ public class TokenStream {
 		return rawString;
 	}
 	
-	private void initStopwordList() {
+	public void initStopwordList() {
 		System.out.println("Initializing StopWord list.......");
 		File stopWordRef = new File(STOP_WORD_DIR);
 		String line = null;
@@ -117,6 +121,10 @@ public class TokenStream {
 			return tokenList.poll();
 		}
 		return null;
+	}
+
+	public List<String> getStopwords() {
+		return stopwords;
 	}
 
 }

@@ -1,18 +1,123 @@
 package ir.driver;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.TreeSet;
+
+import ir.data.TokenStream;
 import ir.utils.SPIMI;
 
 public class Driver {
 
+	private static List<String> stopwords = new ArrayList<String>();
+	
 	public static void initIndex() {
 		SPIMI spimi = SPIMI.getInstance();
 		spimi.init();
 	}
 	
 	public static void main(String[] args) {	
+		System.out.println("Initializing Inverted Index......");
 		initIndex();
 		
+		boolean keepSessionAlive = true;
+		Scanner sc = new Scanner(System.in);
+		while(keepSessionAlive) {
+			System.out.println("Please enter your query:");
+			String query = sc.nextLine();
+			
+			System.out.println("Which interpreter you wanna use? AND/OR");
+			String interpreter = sc.nextLine();
 		
+			if(interpreter.equalsIgnoreCase("and") || interpreter.equalsIgnoreCase("or")) {
+				searchQuery(interpreter, query);
+			} else {
+				System.out.println("Wrong input, expecting AND/OR, your input: " + interpreter);
+			}
+			
+			System.out.println("Do you wanna search another one? Y/N");
+			String keepAlive = sc.nextLine();
+			if(keepAlive.equalsIgnoreCase("y") || keepAlive.equalsIgnoreCase("n")) {
+				keepSessionAlive = keepAlive.equalsIgnoreCase("y");
+			}
+		}
+		sc.close();
+		System.out.println("Thank you for using IR, bye!");
+		
+	}
+
+	private static void searchQuery(String interpreter, String query) {
+		String processedQuery = processQuery(query);
+		String[] stringBuffer = processedQuery.split(" ");
+		TreeSet<Integer> result = new TreeSet<Integer>();
+		
+		if(interpreter.equalsIgnoreCase("and")) {
+			for(String term: stringBuffer) {
+				if(result.isEmpty() && SPIMI.getInstance().getMergedIndex().get(term) != null) {
+					result.addAll(SPIMI.getInstance().getMergedIndex().get(term));
+				}else {
+					intersect(result, SPIMI.getInstance().getMergedIndex().get(term));
+				}
+			}
+		} else if(interpreter.equalsIgnoreCase("or")) {
+			for(String term: stringBuffer) {
+				if(result.isEmpty() && SPIMI.getInstance().getMergedIndex().get(term) != null) {
+					result.addAll(SPIMI.getInstance().getMergedIndex().get(term));
+				}else {
+					union(result, SPIMI.getInstance().getMergedIndex().get(term));	
+				}
+			}
+		}
+		
+		System.out.println("Result: " + result.toString());	
+		System.out.println("Size of result: " + result.size());
+	}
+
+	private static void union(TreeSet<Integer> postingList1, TreeSet<Integer> postingList2) {
+		//Union of two posting list.
+		if(postingList2 != null) {
+			postingList1.addAll(postingList2);
+		}
+	}
+
+	private static void intersect(TreeSet<Integer> postingList1, TreeSet<Integer> postingList2) {
+		//Intersection of two posting list.
+		if(postingList2 != null) {
+			if(postingList1.size() > postingList2.size()) {
+				postingList1.retainAll(postingList2);
+			}else {
+				postingList1.retainAll(postingList1);
+			}
+		}
+	}
+	
+	private static String processQuery(String query) {
+		String processed = query;
+		processed = processed.toLowerCase();
+		processed = removeStopWord(processed);
+		return processed;
+	}
+	
+	@SuppressWarnings("unused")
+	private static String removeStopWord(String query) {
+		stopwords = TokenStream.getInstance().getStopwords();
+		
+		if(stopwords.size() == 0) {
+			TokenStream.getInstance().initStopwordList();
+		}
+		
+		String[] buffer = query.split(" ");
+		String output;
+		StringBuilder sb = new StringBuilder();
+		for(String token: buffer) {
+			if(!stopwords.contains(token)) {
+				sb.append(token);
+				sb.append(" ");
+			}
+		}
+		
+		return output = sb.toString();
 	}
 	
 }
