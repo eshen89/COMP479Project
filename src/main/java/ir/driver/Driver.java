@@ -14,7 +14,9 @@ public class Driver {
 	
 	public static void initIndex() {
 		SPIMI spimi = SPIMI.getInstance();
+		
 		spimi.init();
+		
 	}
 	
 	public static void main(String[] args) {	
@@ -23,6 +25,7 @@ public class Driver {
 		
 		boolean keepSessionAlive = true;
 		Scanner sc = new Scanner(System.in);
+		
 		while(keepSessionAlive) {
 			System.out.println("Please enter your query:");
 			String query = sc.nextLine();
@@ -32,16 +35,21 @@ public class Driver {
 		
 			if(interpreter.equalsIgnoreCase("and") || interpreter.equalsIgnoreCase("or")) {
 				searchQuery(interpreter, query);
+				
 			} else {
 				System.out.println("Wrong input, expecting AND/OR, your input: " + interpreter);
+				
 			}
 			
 			System.out.println("Do you wanna search another one? Y/N");
 			String keepAlive = sc.nextLine();
+			
 			if(keepAlive.equalsIgnoreCase("y") || keepAlive.equalsIgnoreCase("n")) {
 				keepSessionAlive = keepAlive.equalsIgnoreCase("y");
+				
 			}
 		}
+		
 		sc.close();
 		System.out.println("Thank you for using IR, bye!");
 		
@@ -54,18 +62,27 @@ public class Driver {
 		
 		if(interpreter.equalsIgnoreCase("and")) {
 			for(String term: stringBuffer) {
-				if(result.isEmpty() && SPIMI.getInstance().getMergedIndex().get(term) != null) {
-					result.addAll(SPIMI.getInstance().getMergedIndex().get(term));
+				
+				TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
+				
+				if(result.isEmpty() && postingList != null) {
+					result.addAll(postingList);
+					
 				}else {
-					intersect(result, SPIMI.getInstance().getMergedIndex().get(term));
+					intersect(result, postingList);
 				}
 			}
-		} else if(interpreter.equalsIgnoreCase("or")) {
+		}else if(interpreter.equalsIgnoreCase("or")) {
+			
 			for(String term: stringBuffer) {
-				if(result.isEmpty() && SPIMI.getInstance().getMergedIndex().get(term) != null) {
-					result.addAll(SPIMI.getInstance().getMergedIndex().get(term));
+				
+				TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
+				
+				if(result.isEmpty() && postingList != null) {
+					result.addAll(postingList);
+					
 				}else {
-					union(result, SPIMI.getInstance().getMergedIndex().get(term));	
+					union(result, postingList);	
 				}
 			}
 		}
@@ -78,16 +95,20 @@ public class Driver {
 		//Union of two posting list.
 		if(postingList2 != null) {
 			postingList1.addAll(postingList2);
+			
 		}
 	}
 
 	private static void intersect(TreeSet<Integer> postingList1, TreeSet<Integer> postingList2) {
 		//Intersection of two posting list.
 		if(postingList2 != null) {
+			
 			if(postingList1.size() > postingList2.size()) {
 				postingList1.retainAll(postingList2);
+				
 			}else {
 				postingList1.retainAll(postingList1);
+				
 			}
 		}
 	}
@@ -96,6 +117,7 @@ public class Driver {
 		String processed = query;
 		processed = processed.toLowerCase();
 		processed = removeStopWord(processed);
+		
 		return processed;
 	}
 	
@@ -110,10 +132,13 @@ public class Driver {
 		String[] buffer = query.split(" ");
 		String output;
 		StringBuilder sb = new StringBuilder();
+		
 		for(String token: buffer) {
+			
 			if(!stopwords.contains(token)) {
 				sb.append(token);
 				sb.append(" ");
+				
 			}
 		}
 		
