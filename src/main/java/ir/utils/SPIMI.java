@@ -39,20 +39,29 @@ public class SPIMI {
 		tokenStream = TokenStream.getInstance();
 		tokenStream.init();
 		
-		spimiInvert(100000, 10000, tokenStream);
+		long startTime = System.currentTimeMillis();
+		
+		spimiInvert(100000, 10000, tokenStream);		
+		
+		startTime = System.currentTimeMillis();
 		
 		System.out.println("Merging all blocks.......");
 		for(Map<String, TreeSet<Integer>> map: this.spimiList) {
 			this.mergedIndex = merge(map, this.mergedIndex);
 		}
 		System.out.println("Done!");
+		
+		timeUsed(startTime);
+		
 		System.out.println("Writing sorted Inverted List into txt file.......");
 		writeToFile(OUTPUT_DIR + SORTED_INVERTED_INDEX, mergedIndex, 0);
 		System.out.println("Inverted Index Initialized!");
+		
 	}
 	
-	public void spimiInvert(long memorySize, long blockSize, TokenStream tokenStream) {		
+	public void spimiInvert(long memorySize, long blockSize, TokenStream tokenStream) {
 		System.out.println("Performing SPIMI.......");
+		long startTime = System.currentTimeMillis();
 		int ouputFileID = 0;
 		long initSize = memorySize;
 		
@@ -82,6 +91,7 @@ public class SPIMI {
 			}
 		}
 		System.out.println("Done!");
+		timeUsed(startTime);
 	}
 	
 	private void addToIndex(String term, TreeSet<Integer> posting) {
@@ -119,5 +129,13 @@ public class SPIMI {
 	public Map<String, TreeSet<Integer>> getMergedIndex() {
 		return mergedIndex;
 	}
+	
+    private void timeUsed(long start) {
+		long elapsedTimeMillis = System.currentTimeMillis() - start;
+		
+		float elapsedTimeSec = elapsedTimeMillis/1000F;
+		
+		System.out.printf("Time consumed: %f \n",  elapsedTimeSec);
+    }
 }
  

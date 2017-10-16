@@ -42,7 +42,7 @@ public class RawDocument implements Serializable {
     
     public void init() {
     	System.out.println("Reading from <Reuters21578>.......");
-    	
+    	long startTime = System.currentTimeMillis();
 		if (reutersDir.exists()){ 
 			System.out.println("Extracting.......");
 			
@@ -54,6 +54,7 @@ public class RawDocument implements Serializable {
 			
 		    System.out.println("Done! Reuter document list length: "+ this.getReuterList().size());
 		}
+		timeUsed(startTime);
     }
     
 	private void extract(){
@@ -129,6 +130,14 @@ public class RawDocument implements Serializable {
 	        throw new RuntimeException(e);
 	    }
 	}
+    
+    private void timeUsed(long start) {
+    		long elapsedTimeMillis = System.currentTimeMillis() - start;
+    		
+    		float elapsedTimeSec = elapsedTimeMillis/1000F;
+    		
+    		System.out.printf("Time consumed: %f \n",  elapsedTimeSec);
+    }
     
     private void addReuters(List<Reuter> reuters) {
     		if(this.reuterList == null) {

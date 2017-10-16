@@ -35,7 +35,8 @@ public class TokenStream {
 		rawDocument = RawDocument.getInstance();
 		rawDocument.init();
 		System.out.println("Tokenizing the reuters.......");
-	
+		long startTime = System.currentTimeMillis();
+		
 		String rawString = "";
 		String[] stringBuffer;
 		
@@ -59,7 +60,7 @@ public class TokenStream {
 				}
 			}
 		}
-		
+		timeUsed(startTime);
 		System.out.printf("Done, total token number: %d \n", tokenList.size());
 		
 	}
@@ -126,5 +127,13 @@ public class TokenStream {
 	public List<String> getStopwords() {
 		return stopwords;
 	}
+	
+    private void timeUsed(long start) {
+		long elapsedTimeMillis = System.currentTimeMillis() - start;
+		
+		float elapsedTimeSec = elapsedTimeMillis/1000F;
+		
+		System.out.printf("Time consumed: %f \n",  elapsedTimeSec);
+    }
 
 }
