@@ -44,7 +44,7 @@ public class RawDocument implements Serializable {
     	System.out.println("Reading from <Reuters21578>.......");
     	
 		if (reutersDir.exists()){ 
-			System.out.println("Extracting........");
+			System.out.println("Extracting.......");
 			
 			File outputBuffer = new File(BUFFER_DIR);
 			outputBuffer.mkdir();
@@ -52,7 +52,7 @@ public class RawDocument implements Serializable {
 			this.extract();
 			outputBuffer.delete();
 			
-		    System.out.println("Extracting done, Reuter document list length: "+ this.getReuterList().size());
+		    System.out.println("Done! Reuter document list length: "+ this.getReuterList().size());
 		}
     }
     

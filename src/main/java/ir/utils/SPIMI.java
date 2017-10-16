@@ -41,22 +41,24 @@ public class SPIMI {
 		
 		spimiInvert(100000, 10000, tokenStream);
 		
-		System.out.println("Merging all blocks............");
+		System.out.println("Merging all blocks.......");
 		for(Map<String, TreeSet<Integer>> map: this.spimiList) {
 			this.mergedIndex = merge(map, this.mergedIndex);
 		}
-		
+		System.out.println("Done!");
+		System.out.println("Writing sorted Inverted List into txt file.......");
 		writeToFile(OUTPUT_DIR + SORTED_INVERTED_INDEX, mergedIndex, 0);
+		System.out.println("Inverted Index Initialized!");
 	}
 	
 	public void spimiInvert(long memorySize, long blockSize, TokenStream tokenStream) {		
-		System.out.println("Performing SPIMI.........");
+		System.out.println("Performing SPIMI.......");
 		int ouputFileID = 0;
 		long initSize = memorySize;
 		
 		while(tokenStream.hasNextToken()) {
 
-			if(!(blockSize >= memorySize)) {
+			if(memorySize >= blockSize) {
 				
 				if(tokenStream.hasNextToken()) {
 					Token token = tokenStream.nextToken();
@@ -66,14 +68,13 @@ public class SPIMI {
 						addToIndex(token.getTerm(), postingList);
 					}else {
 						spimiIndex.get(token.getTerm()).add(token.getDocId());
-						System.out.println(token.getTerm() + " is now added to map, list size: " + spimiIndex.get(token.getTerm()).size());
+//						System.out.println(token.getTerm() + " is now added to map, list size: " + spimiIndex.get(token.getTerm()).size());
 					}
 				}
 				
-				memorySize--;
+				memorySize-= 4;
 				
 			}else{
-				System.out.println("Writing block to disk........................................................");
 				this.spimiList.add(spimiIndex);
 				writeToFile(OUTPUT_DIR + INVERTED_INDEX, spimiIndex, ouputFileID);
 				ouputFileID++;
@@ -81,12 +82,12 @@ public class SPIMI {
 				spimiIndex = new HashMap<String, TreeSet<Integer>>();
 			}
 		}
-		System.out.println("Done.");
+		System.out.println("Done!");
 	}
 	
 	private void addToIndex(String term, TreeSet<Integer> posting) {
 		spimiIndex.put(term, posting);
-		System.out.println(term + " is newly added, posting list size " + posting.size());
+//		System.out.println(term + " is newly added, posting list size " + posting.size());
 	}
 	
 	private boolean isExist(String term) {
@@ -94,7 +95,6 @@ public class SPIMI {
 	}
 	
 	private void writeToFile(String filePath, Map<String, TreeSet<Integer>> source, int ouputFileID) {
-		System.out.println("Writing output to file.........");
 		File outputFile = new File(filePath + ouputFileID + ".txt");
 		try {
 			PrintWriter printWriter = new PrintWriter(outputFile);
@@ -102,45 +102,20 @@ public class SPIMI {
 				printWriter.write(term + ": " + source.get(term) + "\n");
 			}
 			printWriter.close();
-			System.out.println("Done.........");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public Map<String, TreeSet<Integer>> merge(Map<String, TreeSet<Integer>> sourceMap, Map<String, TreeSet<Integer>> destinationMap) {
-		if(destinationMap == null || destinationMap.isEmpty()) {
-			for(String term: sourceMap.keySet()) {
+		for(String term: sourceMap.keySet()) {
+			if(destinationMap.containsKey(term)) {
+				destinationMap.get(term).addAll(sourceMap.get(term));
+			}else {
 				destinationMap.put(term, sourceMap.get(term));
 			}
-		}else {
-			
-			for(String term: sourceMap.keySet()) {
-				if(destinationMap.containsKey(term)) {
-					destinationMap.get(term).addAll(sourceMap.get(term));
-				}else {
-					destinationMap.put(term, sourceMap.get(term));
-				}
-			}
-			
 		}
 		return destinationMap;
-	}
-
-	public static void main(String[] args) {
-//		DocumentUtils util = new DocumentUtils();
-//		util.writePOJOReuters();
-//		if(util.readPOJOReuters()) {
-//			System.out.println(util.getDocumentList().size());
-//		}else {
-//			System.err.println("error occurred");
-//		}
-//		util.spmiInvert();
-		SPIMI spimi = SPIMI.getInstance();
-		
-		spimi.init();
-		
-		
 	}
 }
  
