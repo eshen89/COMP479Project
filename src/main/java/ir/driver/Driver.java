@@ -60,29 +60,33 @@ public class Driver {
 		String[] stringBuffer = processedQuery.split(" ");
 		TreeSet<Integer> result = new TreeSet<Integer>();
 		
-		if(interpreter.equalsIgnoreCase("and")) {
-			for(String term: stringBuffer) {
-				
-				TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
-				
-				if(result.isEmpty() && postingList != null) {
-					result.addAll(postingList);
+		if(stringBuffer.length == 1) {
+			result = SPIMI.getInstance().getMergedIndex().get(stringBuffer[0]);
+		}else {		
+			if(interpreter.equalsIgnoreCase("and")) {
+				for(String term: stringBuffer) {
 					
-				}else {
-					intersect(result, postingList);
+					TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
+					
+					if(result.isEmpty() && postingList != null) {
+						result.addAll(postingList);
+						
+					}else {
+						intersect(result, postingList);
+					}
 				}
-			}
-		}else if(interpreter.equalsIgnoreCase("or")) {
-			
-			for(String term: stringBuffer) {
+			}else if(interpreter.equalsIgnoreCase("or")) {
 				
-				TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
-				
-				if(result.isEmpty() && postingList != null) {
-					result.addAll(postingList);
+				for(String term: stringBuffer) {
 					
-				}else {
-					union(result, postingList);	
+					TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
+					
+					if(result.isEmpty() && postingList != null) {
+						result.addAll(postingList);
+						
+					}else {
+						union(result, postingList);	
+					}
 				}
 			}
 		}
