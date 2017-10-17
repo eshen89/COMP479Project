@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author YangShen
+ * This class convert raw Reuter21578 into List<Reuter>
+ */
 public class RawDocument implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -32,6 +36,9 @@ public class RawDocument implements Serializable {
 
     private RawDocument(){}
     
+    /**
+     * @return RawDocument
+     */
     public static RawDocument getInstance() {
     	if(instance == null) {
     		return instance = new RawDocument();
@@ -40,6 +47,10 @@ public class RawDocument implements Serializable {
     	return instance;
     }
     
+    
+    /**
+     * Init method.
+     */
     public void init() {
     	System.out.println("Reading from <Reuters21578>.......");
     	long startTime = System.currentTimeMillis();
@@ -57,6 +68,10 @@ public class RawDocument implements Serializable {
 		timeUsed(startTime);
     }
     
+	/**
+	 * This method extract entire Reuter21758 folder. 
+	 * It read through each .sgm file then processing document.
+	 */
 	private void extract(){
         File [] sgmFiles = reutersDir.listFiles(new FileFilter(){
             public boolean accept(File file){
@@ -74,6 +89,14 @@ public class RawDocument implements Serializable {
         }
     }
 
+    /**
+     * 
+     * This method use regex to fetch <title> and <body> contents and convert 
+     * each document into Reuter object.
+     * @param sgmFile Raw .sgm file
+     * @return List<Reuter> List of Reuters
+     * 
+     */
     private List<Reuter> extractFile(File sgmFile){
 		try{
 	        BufferedReader reader = new BufferedReader(new FileReader(sgmFile));
@@ -136,9 +159,12 @@ public class RawDocument implements Serializable {
     		
     		float elapsedTimeSec = elapsedTimeMillis/1000F;
     		
-    		System.out.printf("Time consumed: %f \n",  elapsedTimeSec);
+    		System.out.printf("<Time consumed: %.2f sec> \n",  elapsedTimeSec);
     }
     
+    /**
+     * @param reuters
+     */
     private void addReuters(List<Reuter> reuters) {
     		if(this.reuterList == null) {
     			this.reuterList = reuters;
@@ -147,14 +173,23 @@ public class RawDocument implements Serializable {
     		}
     }
     
+    /**
+     * @return int
+     */
     public int size() {
     		return this.reuterList.size();
     }
 
+	/**
+	 * @return List<Reuter>
+	 */
 	public List<Reuter> getReuterList() {
 	    return reuterList;
 	}
 
+	/**
+	 * @param reuterList
+	 */
 	public void setReuterList(List<Reuter> reuterList) {
 	    this.reuterList = reuterList;
 	}

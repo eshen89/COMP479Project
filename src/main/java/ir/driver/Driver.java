@@ -8,6 +8,10 @@ import java.util.TreeSet;
 import ir.data.TokenStream;
 import ir.utils.SPIMI;
 
+/**
+ * @author YangShen
+ * Driver class
+ */
 public class Driver {
 
 	private static List<String> stopwords = new ArrayList<String>();
@@ -55,6 +59,14 @@ public class Driver {
 		
 	}
 
+	/**
+	 * Pre-process query into lower-cased, number-free, stop-word-free string.
+	 * Lookup result for query.
+	 * 
+	 * @param interpreter
+	 * @param query
+	 * 
+	 */
 	private static void searchQuery(String interpreter, String query) {
 		String processedQuery = processQuery(query);
 		String[] stringBuffer = processedQuery.split(" ");
@@ -95,6 +107,10 @@ public class Driver {
 		System.out.println("Size of result: " + result.size());
 	}
 
+	/**
+	 * @param postingList1
+	 * @param postingList2
+	 */
 	private static void union(TreeSet<Integer> postingList1, TreeSet<Integer> postingList2) {
 		//Union of two posting list.
 		if(postingList2 != null) {
@@ -103,6 +119,10 @@ public class Driver {
 		}
 	}
 
+	/**
+	 * @param postingList1
+	 * @param postingList2 
+	 */
 	private static void intersect(TreeSet<Integer> postingList1, TreeSet<Integer> postingList2) {
 		//Intersection of two posting list.
 		if(postingList2 != null) {
@@ -117,6 +137,11 @@ public class Driver {
 		}
 	}
 	
+	/**
+	 * @param query
+	 * @return String
+	 *
+	 */
 	private static String processQuery(String query) {
 		String processed = query;
 		processed = processed.toLowerCase();
@@ -125,6 +150,10 @@ public class Driver {
 		return processed;
 	}
 	
+	/**
+	 * @param query
+	 * @return String
+	 */
 	@SuppressWarnings("unused")
 	private static String removeStopWord(String query) {
 		stopwords = TokenStream.getInstance().getStopwords();

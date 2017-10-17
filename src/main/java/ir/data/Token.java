@@ -1,5 +1,11 @@
 package ir.data;
 
+
+/**
+ * @author YangShen
+ *
+ *	Class for Token
+ */
 public class Token {
 	
 	private String term;

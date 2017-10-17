@@ -9,6 +9,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * @author YangShen
+ *	Class definition for TokenStream
+ */
 public class TokenStream {
 	
 	private static TokenStream instance;
@@ -24,6 +28,9 @@ public class TokenStream {
 	
 	private TokenStream() {};
 	
+	/**
+	 * @return TokenStream
+	 */
 	public static TokenStream getInstance() {
 		if(instance == null) {
 			return instance = new TokenStream();
@@ -31,6 +38,9 @@ public class TokenStream {
 		return instance;
 	}
 	
+	/**
+	 * init method
+	 */
 	public void init() {
 		rawDocument = RawDocument.getInstance();
 		rawDocument.init();
@@ -40,6 +50,7 @@ public class TokenStream {
 		String rawString = "";
 		String[] stringBuffer;
 		
+		System.out.println("Compressing.......");
 		for(Reuter reuter: rawDocument.getReuterList()) {
 			int docId = reuter.getDocID();
 			StringBuilder sb = new StringBuilder();
@@ -60,14 +71,20 @@ public class TokenStream {
 				}
 			}
 		}
-		timeUsed(startTime);
 		System.out.printf("Done, total token number: %d \n", tokenList.size());
-		
+		timeUsed(startTime);
 	}
 	
+	/**
+	 * Lower-cased rawString with removed punctuation, number, special character and stop words
+	 * @param rawString
+	 * @return String
+	 *
+	 */
 	private String compress(String rawString) {
 		if(!rawString.equals("")) {
 			String processedString = rawString;
+			processedString = processedString.replaceAll("-", " ");
 			processedString = processedString.replaceAll("\t", " ");
 			processedString = processedString.replaceAll("\\p{Punct}|\\d", " ");
 			processedString = processedString.replaceAll("^ +| +$|( )+", "$1");
@@ -78,6 +95,10 @@ public class TokenStream {
 		return rawString;
 	}
 	
+	/**
+	 * Initialization of stop word
+	 * Read from stopword.txt, load into a list.
+	 */
 	public void initStopwordList() {
 		System.out.println("Initializing StopWord list.......");
 		File stopWordRef = new File(STOP_WORD_DIR);
@@ -94,6 +115,12 @@ public class TokenStream {
 		}
 	}
 	
+	/**
+	 * Stop word removed string
+	 * @param lowercased_string
+	 * @return String
+	 *
+	 */
 	@SuppressWarnings("unused")
 	private String removeStopWord(String lowercased_string) {
 		if(this.stopwords.size() == 0) {
@@ -113,10 +140,17 @@ public class TokenStream {
 		return output = sb.toString();
 	}
 	
+	/**
+	 * @return boolean
+	 */
 	public boolean hasNextToken() {
 		return !tokenList.isEmpty();
 	}
 	
+	/**
+	 * @return Token
+	 * Return token if exist.
+	 */
 	public Token nextToken() {
 		if(tokenList != null || hasNextToken()) {
 			return tokenList.poll();
@@ -124,16 +158,22 @@ public class TokenStream {
 		return null;
 	}
 
+	/**
+	 * @return List<String>
+	 */
 	public List<String> getStopwords() {
 		return stopwords;
 	}
 	
+    /**
+     * @param start
+     */
     private void timeUsed(long start) {
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
 		
 		float elapsedTimeSec = elapsedTimeMillis/1000F;
 		
-		System.out.printf("Time consumed: %f \n",  elapsedTimeSec);
+		System.out.printf("<Time consumed: %.2f sec> \n",  elapsedTimeSec);
     }
 
 }

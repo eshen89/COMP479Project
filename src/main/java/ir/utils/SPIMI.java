@@ -13,6 +13,11 @@ import java.util.TreeSet;
 import ir.data.Token;
 import ir.data.TokenStream;
 
+/**
+ * @author ethanshen
+ *
+ *	Class definitions for SPIMI.
+ */
 public class SPIMI {
 	
 	private static SPIMI instance;
@@ -28,6 +33,9 @@ public class SPIMI {
 	
 	private SPIMI(){};
 	
+	/**
+	 * @return SPIMI
+	 */
 	public static SPIMI getInstance() {
 		if(instance == null) {
 			instance = new SPIMI();
@@ -35,6 +43,9 @@ public class SPIMI {
 		return instance;
 	}
 	
+	/**
+	 * Init method.
+	 */
 	public void init() {
 		tokenStream = TokenStream.getInstance();
 		tokenStream.init();
@@ -43,25 +54,30 @@ public class SPIMI {
 		
 		spimiInvert(100000, 10000, tokenStream);		
 		
-		startTime = System.currentTimeMillis();
-		
 		System.out.println("Merging all blocks.......");
 		for(Map<String, TreeSet<Integer>> map: this.spimiList) {
 			this.mergedIndex = merge(map, this.mergedIndex);
 		}
-		System.out.println("Done!");
-		
-		timeUsed(startTime);
 		
 		System.out.println("Writing sorted Inverted List into txt file.......");
 		writeToFile(OUTPUT_DIR + SORTED_INVERTED_INDEX, mergedIndex, 0);
 		System.out.println("Inverted Index Initialized!");
 		
+		timeUsed(startTime);
 	}
 	
+	/**
+	 * 
+	 * Separate entire TokenStream into blocks;
+	 * Construct inverted index for each block;
+	 * Merge and sort all blocks.
+	 * @param memorySize
+	 * @param blockSize
+	 * @param tokenStream
+	 * 
+	 */
 	public void spimiInvert(long memorySize, long blockSize, TokenStream tokenStream) {
 		System.out.println("Performing SPIMI.......");
-		long startTime = System.currentTimeMillis();
 		int ouputFileID = 0;
 		long initSize = memorySize;
 		
@@ -90,18 +106,29 @@ public class SPIMI {
 				spimiIndex = new HashMap<String, TreeSet<Integer>>();
 			}
 		}
-		System.out.println("Done!");
-		timeUsed(startTime);
 	}
 	
+	/**
+	 * @param term
+	 * @param posting
+	 */
 	private void addToIndex(String term, TreeSet<Integer> posting) {
 		spimiIndex.put(term, posting);
 	}
 	
+	/**
+	 * @param term
+	 * @return boolean
+	 */
 	private boolean isExist(String term) {
 		return spimiIndex.containsKey(term);
 	}
 	
+	/**
+	 * @param filePath File path.
+	 * @param source	 List of Reuter
+	 * @param ouputFileID Document id for each output
+	 */
 	private void writeToFile(String filePath, Map<String, TreeSet<Integer>> source, int ouputFileID) {
 		File outputFile = new File(filePath + ouputFileID + ".txt");
 		try {
@@ -115,6 +142,11 @@ public class SPIMI {
 		}
 	}
 	
+	/**
+	 * @param sourceMap
+	 * @param destinationMap
+	 * @return Map<String, TreeSet<Integer>>
+	 */
 	public Map<String, TreeSet<Integer>> merge(Map<String, TreeSet<Integer>> sourceMap, Map<String, TreeSet<Integer>> destinationMap) {
 		for(String term: sourceMap.keySet()) {
 			if(destinationMap.containsKey(term)) {
@@ -126,16 +158,22 @@ public class SPIMI {
 		return destinationMap;
 	}
 
+	/**
+	 * @return Map<String, TreeSet<Integer>>
+	 */
 	public Map<String, TreeSet<Integer>> getMergedIndex() {
 		return mergedIndex;
 	}
 	
+    /**
+     * @param start
+     */
     private void timeUsed(long start) {
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
 		
 		float elapsedTimeSec = elapsedTimeMillis/1000F;
 		
-		System.out.printf("Time consumed: %f \n",  elapsedTimeSec);
+		System.out.printf("<Time consumed: %.2f sec> \n",  elapsedTimeSec);
     }
 }
  

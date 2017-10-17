@@ -2,11 +2,14 @@ package ir.data;
 
 import java.io.Serializable;
 
+
+/**
+ * @author YangShen
+ *
+ *	This is POJO class for Reuter
+ */
 public class Reuter implements Serializable{
 
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private int docID;
 	private String title;
