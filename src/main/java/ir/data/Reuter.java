@@ -9,7 +9,7 @@ import java.io.Serializable;
  *	This is POJO class for Reuter
  */
 public class Reuter implements Serializable{
-
+	
 	private static final long serialVersionUID = 1L;
 	private int docID;
 	private String title;

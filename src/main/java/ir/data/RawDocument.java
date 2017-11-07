@@ -20,7 +20,7 @@ public class RawDocument implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static RawDocument instance;
-	private List<Reuter> reuterList;
+	private static List<Reuter> reuterList;
 	
 	private static final String REUTERS_DIR = "src/main/resources/reuters21578";
 	private static final String BUFFER_DIR = "src/main/resources/reuterBuffer";
@@ -40,11 +40,11 @@ public class RawDocument implements Serializable {
      * @return RawDocument
      */
     public static RawDocument getInstance() {
-    	if(instance == null) {
-    		return instance = new RawDocument();
-    	}
+	    	if(instance == null) {
+	    		return instance = new RawDocument();
+	    	}
     	
-    	return instance;
+	    	return instance;
     }
     
     
@@ -52,20 +52,20 @@ public class RawDocument implements Serializable {
      * Init method.
      */
     public void init() {
-    	System.out.println("Reading from <Reuters21578>.......");
-    	long startTime = System.currentTimeMillis();
-		if (reutersDir.exists()){ 
-			System.out.println("Extracting.......");
-			
-			File outputBuffer = new File(BUFFER_DIR);
-			outputBuffer.mkdir();
-			
-			this.extract();
-			outputBuffer.delete();
-			
-		    System.out.println("Done! Reuter document list length: "+ this.getReuterList().size());
-		}
-		timeUsed(startTime);
+	    	System.out.println("Reading from <Reuters21578>.......");
+	    	long startTime = System.currentTimeMillis();
+			if (reutersDir.exists()){ 
+				System.out.println("Extracting.......");
+				
+				File outputBuffer = new File(BUFFER_DIR);
+				outputBuffer.mkdir();
+				
+				this.extract();
+				outputBuffer.delete();
+				
+			    System.out.println("Done! Reuter document list length: "+ RawDocument.getReuterList().size());
+			}
+			timeUsed(startTime);
     }
     
 	/**
@@ -134,16 +134,17 @@ public class RawDocument implements Serializable {
 	                    writer.close();
 	                    outBuffer.setLength(0);
 	                    buffer.setLength(0);
-	                    
-	                    docID++;
+	                   
 	                    
 	                    BufferedReader reuterReader = new BufferedReader(new FileReader(outFile));
 	                    Reuter reuter = new Reuter();
-	                    reuter.setDocID(docID);
+	                    reuter.setDocID(docID);	                  
 	                    reuter.setTitle(reuterReader.readLine());
 	                    reuter.setBody(reuterReader.readLine());
 	                    reuterList.add(reuter);
 	                    reuterReader.close();
+	                    
+	                    docID++;
 	                }
 	        }
 	        reader.close();
@@ -166,10 +167,10 @@ public class RawDocument implements Serializable {
      * @param reuters
      */
     private void addReuters(List<Reuter> reuters) {
-    		if(this.reuterList == null) {
-    			this.reuterList = reuters;
+    		if(RawDocument.reuterList == null) {
+    			RawDocument.reuterList = reuters;
     		}else {
-    			this.reuterList.addAll(reuters);
+    			RawDocument.reuterList.addAll(reuters);
     		}
     }
     
@@ -177,13 +178,13 @@ public class RawDocument implements Serializable {
      * @return int
      */
     public int size() {
-    		return this.reuterList.size();
+    		return RawDocument.reuterList.size();
     }
 
 	/**
 	 * @return List<Reuter>
 	 */
-	public List<Reuter> getReuterList() {
+	public static List<Reuter> getReuterList() {
 	    return reuterList;
 	}
 
@@ -191,6 +192,6 @@ public class RawDocument implements Serializable {
 	 * @param reuterList
 	 */
 	public void setReuterList(List<Reuter> reuterList) {
-	    this.reuterList = reuterList;
+	    RawDocument.reuterList = reuterList;
 	}
 }

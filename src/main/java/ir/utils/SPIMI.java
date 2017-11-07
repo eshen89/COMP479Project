@@ -164,8 +164,12 @@ public class SPIMI {
 	public Map<String, TreeSet<Integer>> getMergedIndex() {
 		return mergedIndex;
 	}
-	
-    /**
+		
+    public TokenStream getTokenStream() {
+		return tokenStream;
+	}
+
+	/**
      * @param start
      */
     private void timeUsed(long start) {

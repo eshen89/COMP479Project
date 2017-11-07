@@ -1,5 +1,7 @@
 package ir.data;
 
+import org.tartarus.snowball.ext.EnglishStemmer;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -17,16 +19,12 @@ public class TokenStream {
 	
 	private static TokenStream instance;
 	private static RawDocument rawDocument;
-	private static Queue<Token> tokenList = new LinkedList<Token>();
-	private List<String> stopwords = new ArrayList<String>();
+	private static Queue<Token> tokenList = new LinkedList<>();
+	private List<String> stopWords = new ArrayList<>();
 	
-	public void setStopwords(List<String> stopwords) {
-		this.stopwords = stopwords;
-	}
-
-	private final String STOP_WORD_DIR = "src/main/resources/StopWords/stopwords.txt";
+	private final String STOP_WORD_DIR = "src/main/resources/StopWords/stopWords.txt";
 	
-	private TokenStream() {};
+	private TokenStream() {}
 	
 	/**
 	 * @return TokenStream
@@ -46,29 +44,24 @@ public class TokenStream {
 		rawDocument.init();
 		System.out.println("Tokenizing the reuters.......");
 		long startTime = System.currentTimeMillis();
-		
-		String rawString = "";
+
+		String rawString;
 		String[] stringBuffer;
 		
 		System.out.println("Compressing.......");
-		for(Reuter reuter: rawDocument.getReuterList()) {
+		for(Reuter reuter: RawDocument.getReuterList()) {
 			int docId = reuter.getDocID();
-			StringBuilder sb = new StringBuilder();
-			sb.append(reuter.getTitle());
-			sb.append(reuter.getBody());
-			rawString = sb.toString();
+            rawString = reuter.getTitle() + reuter.getBody();
 			rawString = compress(rawString);
 			stringBuffer = rawString.split(" ");
 			
 			for(String rawToken: stringBuffer) {
 				if(rawToken != null) {
-					if(!(rawToken.equalsIgnoreCase("") && rawToken.equalsIgnoreCase(" "))) {
-						Token token = new Token();
-						token.setDocId(docId);
-						token.setTerm(rawToken);
-						tokenList.add(token);
-					}
-				}
+                    Token token = new Token();
+                    token.setDocId(docId);
+                    token.setTerm(rawToken);
+                    tokenList.add(token);
+                }
 			}
 		}
 		System.out.printf("Done, total token number: %d \n", tokenList.size());
@@ -82,16 +75,20 @@ public class TokenStream {
 	 *
 	 */
 	private String compress(String rawString) {
-		if(!rawString.equals("")) {
-			String processedString = rawString;
+        String processedString;
+	    if(!rawString.equals("")) {
+			processedString = rawString;
 			processedString = processedString.replaceAll("-", " ");
 			processedString = processedString.replaceAll("\t", " ");
 			processedString = processedString.replaceAll("\\p{Punct}|\\d", " ");
 			processedString = processedString.replaceAll("^ +| +$|( )+", "$1");
 			processedString = processedString.toLowerCase();
 			processedString = removeStopWord(processedString);
+            processedString = stem(processedString);
+
 			return processedString;
 		}
+
 		return rawString;
 	}
 	
@@ -107,7 +104,7 @@ public class TokenStream {
 			FileReader fileReader = new FileReader(stopWordRef);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			while((line = bufferedReader.readLine()) != null) {
-				this.stopwords.add(line);
+				this.stopWords.add(line);
 			}
 			bufferedReader.close();
 		} catch (IOException e) {
@@ -123,7 +120,7 @@ public class TokenStream {
 	 */
 	@SuppressWarnings("unused")
 	private String removeStopWord(String lowercased_string) {
-		if(this.stopwords.size() == 0) {
+		if(this.stopWords.size() == 0) {
 			initStopwordList();
 		}
 		
@@ -131,7 +128,7 @@ public class TokenStream {
 		String output;
 		StringBuilder sb = new StringBuilder();
 		for(String token: buffer) {
-			if(!this.stopwords.contains(token)) {
+			if(!this.stopWords.contains(token)) {
 				sb.append(token);
 				sb.append(" ");
 			}
@@ -139,6 +136,20 @@ public class TokenStream {
 		
 		return output = sb.toString();
 	}
+
+	public static String stem(String data){
+        String[] strings = data.split(" ");
+        StringBuilder sb = new StringBuilder();
+        EnglishStemmer stemmer = new EnglishStemmer();
+        for(String s: strings){
+            stemmer.setCurrent(s);
+            if(stemmer.stem()){
+                sb.append(stemmer.getCurrent());
+                sb.append(" ");
+            }
+        }
+        return sb.toString();
+    }
 	
 	/**
 	 * @return boolean
@@ -161,11 +172,19 @@ public class TokenStream {
 	/**
 	 * @return List<String>
 	 */
-	public List<String> getStopwords() {
-		return stopwords;
+	public List<String> getStopWords() {
+		return stopWords;
 	}
 	
-    /**
+    public void setStopWords(List<String> stopWords) {
+		this.stopWords = stopWords;
+	}
+
+	public static RawDocument getRawDocument() {
+		return rawDocument;
+	}
+
+	/**
      * @param start
      */
     private void timeUsed(long start) {
