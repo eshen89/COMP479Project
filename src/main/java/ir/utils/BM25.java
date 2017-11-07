@@ -28,8 +28,17 @@ public class BM25 {
 	private final double b = 0.75;
 	private final int N = 21578;
 	private final double Lave = 118;  //pre-calculated for Reuter21758
+
+	private static BM25 instance;
 	
-	public BM25() {}
+	private BM25(){}
+
+	public static BM25 getInstance() {
+		if(instance == null){
+			instance = new BM25();
+		}
+		return instance;
+	}
 	
 	public double calculateScore(String term, Reuter reuter, int dft) {
 		int tftd = calculateTFTD(term, reuter);

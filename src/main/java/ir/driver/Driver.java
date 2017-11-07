@@ -1,13 +1,11 @@
 package ir.driver;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.TreeSet;
+import java.util.*;
 
 import ir.data.RawDocument;
 import ir.data.Reuter;
 import ir.data.TokenStream;
+import ir.utils.BM25;
 import ir.utils.SPIMI;
 
 /**
@@ -19,7 +17,7 @@ public class Driver {
 	private static List<String> stopwords = new ArrayList<String>();
 	private static List<Reuter> reuters;
 	
-	public static void initIndex() {
+	private static void initIndex() {
 		SPIMI spimi = SPIMI.getInstance();
 		spimi.init();
 		
@@ -74,41 +72,64 @@ public class Driver {
 	private static void searchQuery(String interpreter, String query) {
 		String processedQuery = processQuery(query);
 		String[] stringBuffer = processedQuery.split(" ");
-		TreeSet<Integer> result = new TreeSet<Integer>();
+		TreeSet<Integer> rawResult = new TreeSet<Integer>();
+		List<Integer> result = new ArrayList<>();
 		
-		if(stringBuffer.length == 1) {
-			result = SPIMI.getInstance().getMergedIndex().get(stringBuffer[0]);
-		}else {		
-			if(interpreter.equalsIgnoreCase("and")) {
-				for(String term: stringBuffer) {
-					
-					TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
-					
-					if(result.isEmpty() && postingList != null) {
-						result.addAll(postingList);
-						
-					}else {
-						intersect(result, postingList);
-					}
-				}
-			}else if(interpreter.equalsIgnoreCase("or")) {
-				
-				for(String term: stringBuffer) {
-					
-					TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
-					
-					if(result.isEmpty() && postingList != null) {
-						result.addAll(postingList);
-						
-					}else {
-						union(result, postingList);	
-					}
-				}
-			}
-		}
-		
-		System.out.println("Result: " + result.toString());	
-		System.out.println("Size of result: " + result.size());
+		if(stringBuffer.length != 0) {
+            if (stringBuffer.length == 1) {
+                rawResult = SPIMI.getInstance().getMergedIndex().get(stringBuffer[0]);
+            } else {
+                if (interpreter.equalsIgnoreCase("and")) {
+                    for (String term : stringBuffer) {
+
+                        TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
+
+                        if (rawResult.isEmpty() && postingList != null) {
+                            rawResult.addAll(postingList);
+
+                        } else {
+                            intersect(rawResult, postingList);
+                        }
+                    }
+                } else if (interpreter.equalsIgnoreCase("or")) {
+
+                    for (String term : stringBuffer) {
+
+                        TreeSet<Integer> postingList = SPIMI.getInstance().getMergedIndex().get(term);
+
+                        if (rawResult.isEmpty() && postingList != null) {
+                            rawResult.addAll(postingList);
+
+                        } else {
+                            union(rawResult, postingList);
+                        }
+                    }
+                }
+            }
+            System.out.println("Non-ranked Result: " + rawResult.toString());
+            System.out.println("Size of result: " + rawResult.size());
+
+            List<Reuter> reuters = getReuters(rawResult);
+            Map<Integer, Double> rawMap = new HashMap<>();
+
+            for(String s: stringBuffer){
+                int dft = SPIMI.getInstance().getMergedIndex().get(s).size();
+
+                for(Reuter reuter: reuters){
+                    double score = bm25Score(s, reuter, dft);
+
+                    if(rawMap.containsKey(reuter.getDocID())){
+
+                        double newVal = rawMap.get(reuter.getDocID()) + score;
+                        rawMap.replace(reuter.getDocID(), newVal);
+                    }else{
+
+                        rawMap.put(reuter.getDocID(), score);
+                    }
+                }
+            }
+        }
+
 	}
 
 	/**
@@ -154,6 +175,11 @@ public class Driver {
 		processed = TokenStream.stem(processed);
 		return processed;
 	}
+
+	private static double bm25Score(String term, Reuter reuter, int dft){
+	    BM25 bm25 = BM25.getInstance();
+	    return bm25.calculateScore(term, reuter, dft);
+    }
 	
 	/**
 	 * @param query
@@ -168,7 +194,6 @@ public class Driver {
 		}
 		
 		String[] buffer = query.split(" ");
-		String output;
 		StringBuilder sb = new StringBuilder();
 		
 		for(String token: buffer) {
@@ -180,7 +205,21 @@ public class Driver {
 			}
 		}
 		
-		return output = sb.toString();
+		return sb.toString();
 	}
+
+	private static List<Reuter> getReuters(TreeSet<Integer> docIDs){
+	    if(docIDs != null && docIDs.size()!=0) {
+            List<Reuter> result = new ArrayList<>();
+
+            for (Integer i : docIDs) {
+                result.add(reuters.get(i));
+            }
+
+            return result;
+        }
+
+        return null;
+    }
 	
 }

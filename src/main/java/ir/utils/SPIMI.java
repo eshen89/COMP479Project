@@ -22,9 +22,9 @@ public class SPIMI {
 	
 	private static SPIMI instance;
 	private TokenStream tokenStream;
-	private List<Map<String, TreeSet<Integer>>> spimiList = new ArrayList<Map<String, TreeSet<Integer>>>();
-	private Map<String, TreeSet<Integer>> spimiIndex = new HashMap<String, TreeSet<Integer>>();
-	private Map<String, TreeSet<Integer>> mergedIndex = new TreeMap<String, TreeSet<Integer>>();
+	private List<Map<String, TreeSet<Integer>>> spimiList = new ArrayList<>();
+	private Map<String, TreeSet<Integer>> spimiIndex = new HashMap<>();
+	private Map<String, TreeSet<Integer>> mergedIndex = new TreeMap<>();
 	
 	private final String OUTPUT_DIR = "src/main/resources/Inverted_index/";
 	private final String INVERTED_INDEX = "invertedIndex_";
@@ -88,7 +88,7 @@ public class SPIMI {
 				if(tokenStream.hasNextToken()) {
 					Token token = tokenStream.nextToken();
 					if(!isExist(token.getTerm())) {
-						TreeSet<Integer> postingList = new TreeSet<Integer>();
+						TreeSet<Integer> postingList = new TreeSet<>();
 						postingList.add(token.getDocId());
 						addToIndex(token.getTerm(), postingList);
 					}else {
@@ -103,7 +103,7 @@ public class SPIMI {
 				writeToFile(OUTPUT_DIR + INVERTED_INDEX, spimiIndex, ouputFileID);
 				ouputFileID++;
 				memorySize = initSize;
-				spimiIndex = new HashMap<String, TreeSet<Integer>>();
+				spimiIndex = new HashMap<>();
 			}
 		}
 	}
