@@ -118,6 +118,7 @@ public class Driver {
 	private static void union(TreeSet<Integer> postingList1, TreeSet<Integer> postingList2) {
 		//Union of two posting list.
 		if(postingList2 != null) {
+
 			postingList1.addAll(postingList2);
 			
 		}

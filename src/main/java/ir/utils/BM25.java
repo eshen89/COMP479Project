@@ -8,7 +8,7 @@ import ir.data.Reuter;
  * BM25 Implementation based on the formula:
  * 
  * RSVd = ∑ log[N/dft] · [(k1 + 1)tftd / k1((1 − b) + b × (Ld/Lave)) + tftd]
- * 		 t∈q
+ *       t∈q
  * 
  * N = total number of documents in corpus;
  * dft = the number of documents that contain term t;
@@ -41,7 +41,7 @@ public class BM25 {
 		return Math.log(this.N/dft) * (numerator / denominator);
 	}
 	
-	public int calculateTFTD(String term, Reuter reuter) {
+	private int calculateTFTD(String term, Reuter reuter) {
 		int counter = 0;
 		String[] body = splitBody(reuter);
 		
@@ -57,7 +57,7 @@ public class BM25 {
 		
 	}
 	
-	public int calculateLd(Reuter reuter) {
+	private int calculateLd(Reuter reuter) {
 		int length = 0;
 		String[] body = splitBody(reuter);
 		
@@ -77,7 +77,8 @@ public class BM25 {
 	
 	private String[] splitBody(Reuter reuter) {
 		String[] body = null;
-		if(reuter.getBody() !=null && reuter.getBody() != "") {
+
+		if(reuter.getBody() !=null && !reuter.getBody().equals("")) {
 		
 			body = reuter.getBody().split(" ");
 		}
