@@ -1,6 +1,7 @@
 package ir.utils;
 
 import ir.data.Reuter;
+import ir.data.TokenStream;
 
 /**
  * @author Yang Shen(27159390)
@@ -41,13 +42,16 @@ public class BM25 {
 	}
 	
 	public double calculateScore(String term, Reuter reuter, int dft) {
-		int tftd = calculateTFTD(term, reuter);
-		int ld = calculateLd(reuter);
-		
-		double numerator = (this.k1 + 1) * tftd;
-		double denominator = this.k1 * ((1 - b) + b * (ld / this.Lave)) + tftd;
-		
-		return Math.log(this.N/dft) * (numerator / denominator);
+		if(dft != 0) {
+			int tftd = calculateTFTD(term, reuter);
+			int ld = calculateLd(reuter);
+
+			double numerator = (this.k1 + 1) * tftd;
+			double denominator = this.k1 * ((1 - b) + b * (ld / this.Lave)) + tftd;
+
+			return Math.log(this.N / dft) * (numerator / denominator);
+		}
+		return 0;
 	}
 	
 	private int calculateTFTD(String term, Reuter reuter) {
@@ -70,17 +74,18 @@ public class BM25 {
 		int length = 0;
 		String[] body = splitBody(reuter);
 		
-		length = body.length;
+		length = body == null? 0 : body.length;
 		
 		//Remove invalid elements in body[].
-		for(String s: body) {
-			
-			if(s.equalsIgnoreCase("") || s.equalsIgnoreCase(" ")) {
-					
+		if(length != 0) {
+			for (String s : body) {
+
+				if (s.equalsIgnoreCase("") || s.equalsIgnoreCase(" ")) {
+
 					length--;
 				}
+			}
 		}
-		
 		return length;
 	}
 	
@@ -88,9 +93,11 @@ public class BM25 {
 		String[] body = null;
 
 		if(reuter.getBody() !=null && !reuter.getBody().equals("")) {
-		
-			body = reuter.getBody().split(" ");
+			String s = reuter.getBody();
+			s = TokenStream.compress(s);
+			body = s.split(" ");
 		}
 		return body;
 	}
+
 }

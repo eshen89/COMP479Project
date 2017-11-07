@@ -1,6 +1,7 @@
 package ir.driver;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import ir.data.RawDocument;
 import ir.data.Reuter;
@@ -14,7 +15,6 @@ import ir.utils.SPIMI;
  */
 public class Driver {
 
-	private static List<String> stopwords = new ArrayList<String>();
 	private static List<Reuter> reuters;
 	
 	private static void initIndex() {
@@ -48,6 +48,7 @@ public class Driver {
 			}
 			
 			System.out.println("Do you want to search another one? Y/N");
+
 			String keepAlive = sc.nextLine();
 			
 			if(keepAlive.equalsIgnoreCase("y") || keepAlive.equalsIgnoreCase("n")) {
@@ -73,7 +74,6 @@ public class Driver {
 		String processedQuery = processQuery(query);
 		String[] stringBuffer = processedQuery.split(" ");
 		TreeSet<Integer> rawResult = new TreeSet<Integer>();
-		List<Integer> result = new ArrayList<>();
 		
 		if(stringBuffer.length != 0) {
             if (stringBuffer.length == 1) {
@@ -110,24 +110,28 @@ public class Driver {
             System.out.println("Size of result: " + rawResult.size());
 
             List<Reuter> reuters = getReuters(rawResult);
-            Map<Integer, Double> rawMap = new HashMap<>();
+            Map<Integer, Double> resultMap = new HashMap<>();
 
             for(String s: stringBuffer){
-                int dft = SPIMI.getInstance().getMergedIndex().get(s).size();
+                int dft = SPIMI.getInstance().getMergedIndex().get(s) == null? 0: SPIMI.getInstance().getMergedIndex().get(s).size();
 
                 for(Reuter reuter: reuters){
                     double score = bm25Score(s, reuter, dft);
 
-                    if(rawMap.containsKey(reuter.getDocID())){
+                    if(resultMap.containsKey(reuter.getDocID())){
 
-                        double newVal = rawMap.get(reuter.getDocID()) + score;
-                        rawMap.replace(reuter.getDocID(), newVal);
+                        double newVal = resultMap.get(reuter.getDocID()) + score;
+                        resultMap.replace(reuter.getDocID(), newVal);
                     }else{
 
-                        rawMap.put(reuter.getDocID(), score);
+                        resultMap.put(reuter.getDocID(), score);
                     }
                 }
             }
+
+            resultMap = sortByValue(resultMap);
+            System.out.println("Ranked Result: " + resultMap.keySet().toString());
+            System.out.println("Size of result: " + resultMap.keySet().size());
         }
 
 	}
@@ -170,9 +174,7 @@ public class Driver {
 	 */
 	private static String processQuery(String query) {
 		String processed = query;
-		processed = processed.toLowerCase();
-		processed = removeStopWord(processed);
-		processed = TokenStream.stem(processed);
+        processed = TokenStream.compress(processed);
 		return processed;
 	}
 
@@ -180,33 +182,6 @@ public class Driver {
 	    BM25 bm25 = BM25.getInstance();
 	    return bm25.calculateScore(term, reuter, dft);
     }
-	
-	/**
-	 * @param query
-	 * @return String
-	 */
-	@SuppressWarnings("unused")
-	private static String removeStopWord(String query) {
-		stopwords = TokenStream.getInstance().getStopWords();
-		
-		if(stopwords.size() == 0) {
-			TokenStream.getInstance().initStopwordList();
-		}
-		
-		String[] buffer = query.split(" ");
-		StringBuilder sb = new StringBuilder();
-		
-		for(String token: buffer) {
-			
-			if(!stopwords.contains(token)) {
-				sb.append(token);
-				sb.append(" ");
-				
-			}
-		}
-		
-		return sb.toString();
-	}
 
 	private static List<Reuter> getReuters(TreeSet<Integer> docIDs){
 	    if(docIDs != null && docIDs.size()!=0) {
@@ -220,6 +195,26 @@ public class Driver {
         }
 
         return null;
+    }
+
+    /**
+     * Sort map by its value in descending order.
+     * @param map
+     * @param <K>
+     * @param <V>
+     * @return Map sorted by its value in descending order
+     */
+
+    private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        return map.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
     }
 	
 }

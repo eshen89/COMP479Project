@@ -20,9 +20,9 @@ public class TokenStream {
 	private static TokenStream instance;
 	private static RawDocument rawDocument;
 	private static Queue<Token> tokenList = new LinkedList<>();
-	private List<String> stopWords = new ArrayList<>();
+	private static List<String> stopWords = new ArrayList<>();
 	
-	private final String STOP_WORD_DIR = "src/main/resources/StopWords/stopWords.txt";
+	private final static String STOP_WORD_DIR = "src/main/resources/StopWords/stopWords.txt";
 	
 	private TokenStream() {}
 	
@@ -74,11 +74,11 @@ public class TokenStream {
 	 * @return String
 	 *
 	 */
-	private String compress(String rawString) {
+	public static String compress(String rawString) {
         String processedString;
 	    if(!rawString.equals("")) {
 			processedString = rawString;
-			processedString = processedString.replaceAll("-", " ");
+			processedString = processedString.replaceAll("[-’]", " ");
 			processedString = processedString.replaceAll("\t", " ");
 			processedString = processedString.replaceAll("\\p{Punct}|\\d", " ");
 			processedString = processedString.replaceAll("^ +| +$|( )+", "$1");
@@ -96,15 +96,15 @@ public class TokenStream {
 	 * Initialization of stop word
 	 * Read from stopword.txt, load into a list.
 	 */
-	public void initStopwordList() {
+	public static void initStopwordList() {
 		System.out.println("Initializing StopWord list.......");
 		File stopWordRef = new File(STOP_WORD_DIR);
-		String line = null;
+		String line;
 		try {
 			FileReader fileReader = new FileReader(stopWordRef);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			while((line = bufferedReader.readLine()) != null) {
-				this.stopWords.add(line);
+				stopWords.add(line);
 			}
 			bufferedReader.close();
 		} catch (IOException e) {
@@ -118,23 +118,21 @@ public class TokenStream {
 	 * @return String
 	 *
 	 */
-	@SuppressWarnings("unused")
-	private String removeStopWord(String lowercased_string) {
-		if(this.stopWords.size() == 0) {
+	private static String removeStopWord(String lowercased_string) {
+		if(stopWords.size() == 0) {
 			initStopwordList();
 		}
 		
 		String[] buffer = lowercased_string.split(" ");
-		String output;
 		StringBuilder sb = new StringBuilder();
 		for(String token: buffer) {
-			if(!this.stopWords.contains(token)) {
+			if(!stopWords.contains(token)) {
 				sb.append(token);
 				sb.append(" ");
 			}
 		}
 		
-		return output = sb.toString();
+		return sb.toString();
 	}
 
 	public static String stem(String data){
@@ -167,21 +165,6 @@ public class TokenStream {
 			return tokenList.poll();
 		}
 		return null;
-	}
-
-	/**
-	 * @return List<String>
-	 */
-	public List<String> getStopWords() {
-		return stopWords;
-	}
-	
-    public void setStopWords(List<String> stopWords) {
-		this.stopWords = stopWords;
-	}
-
-	public static RawDocument getRawDocument() {
-		return rawDocument;
 	}
 
 	/**
